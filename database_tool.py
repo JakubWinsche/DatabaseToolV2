@@ -109,6 +109,7 @@ def buildDatabase():
 def chooseDatabase(value):
     global currentDatabase
     currentDatabase = value
+    outputTextbox.insert(END, f'You are currently in: {currentDatabase}\n\n')
     
 def clearOutput():
     clear = tkinter.messagebox.askquestion('Clear', 'Are you sure you want to clear the output table?')
@@ -311,11 +312,6 @@ buttonRun.grid(row = 2, column = 0, sticky = NW)
 buttonTables = Button(frameButtons, text = 'List Tables', width = 15, command = getTables)
 buttonTables.grid(row = 0, column = 1, sticky = NE)
 
-var = StringVar()
-var.set('Choose database:')
-dbDropdown = OptionMenu(frameButtons, var, *databases if databases else ['empty'], command = chooseDatabase)
-dbDropdown.grid(row = 0, column = 0, sticky = NW)
-
 menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
 file = Menu(menubar, tearoff=0)  
 file.add_command(label = 'New', command = buildDatabase)  
@@ -323,24 +319,18 @@ file.add_command(label = 'Open', command = open)
 
 deleteDB = Menu(file, tearoff = 0)
 dirs = os.listdir()
+dDirs = []
 
-if len(dirs) == 0:
-    deleteDB.add_command(label = "empty")
-else:
-    for i in range(0, len(dirs)):
-        deleteDB.add_command(label = f"{dirs[i - 1]}", command = deleteDB)
+if len(dirs) == 0: deleteDB.add_command(label = "empty")
+for i in range(0, len(dirs)): deleteDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: chooseDatabase(dirs[n - 1]))
 file.add_cascade(label = "Delete DB", menu = deleteDB)
 
 chDB = Menu(file, tearoff = 0)
+oDirs = []
 
-if len(dirs) == 0:
-    chDB.add_command(label = "empty")
-else:
-    for i in range(0, len(dirs)):
-        chDB.add_command(label = f"{dirs[i - 1]}", command = deleteDB)
-file.add_cascade(label = "Choose database", menu = chDB)
-
-file.add_command(label = 'Save as')    
+if len(dirs) == 0: chDB.add_command(label = "empty")
+for i in range(0, len(dirs)): chDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: chooseDatabase(dirs[n - 1]))
+file.add_cascade(label = "Choose database", menu = chDB) 
 file.add_separator()  
 file.add_command(label = 'Exit', command = quitTool)
 menubar.add_cascade(label = 'File', menu = file)  
@@ -349,7 +339,7 @@ edit = Menu(menubar, tearoff = 0)
 edit.add_command(label = 'Undo')  
 edit.add_separator()     
 edit.add_command(label = 'Cut')  
-edit.add_command(label = 'Copy')  
+edit.add_command(label = 'Copy', command = copy)  
 edit.add_command(label = 'Paste', command = paste)  
 menubar.add_cascade(label = 'Edit', menu = edit)
 

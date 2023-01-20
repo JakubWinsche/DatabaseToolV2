@@ -9,6 +9,7 @@ import os
 import ctypes
 import pyperclip as pc
 import shutil
+import random
 
 currentDatabase = ''
 databases = []
@@ -99,12 +100,12 @@ def buildDatabase():
         else:
             databases.append(dbName)
             currentDatabase = dbName
-            dbDropdown.destroy()
 
             var = StringVar()
             var.set(dbName)
             dbDropdown = OptionMenu(frameButtons, var, *databases, command = chooseDatabase)
             dbDropdown.grid(row = 0, column = 0, sticky = NW)
+
 
 def chooseDatabase(table):
     global currentDatabase
@@ -224,26 +225,26 @@ def listItems():
 
     try:
         root.withdraw()
-        userInp = simpledialog.askstring(title = 'View Items', prompt = 'What table do you want to view:')
+        userInp = simpledialog.askstring(title = 'View Items', prompt = 'Which table do you want to view:')
         runSql(f'''SELECT * FROM {userInp}''')
 
     except:
         if userInp != None:
             if userInp == '':
-                outputTextbox.insert(END, 'There was no input')
+                outputTextbox.insert(END, 'There was no input.\n\n')
             else:
-                outputTextbox.insert(END, f'There is no such table as {userInp}')
+                outputTextbox.insert(END, f'There is no such table as {userInp}.\n\n')
 
 def about():
-    messagebox.showinfo('PythonGuides', 'Python Guides aims at providing best practical tutorials')
+    messagebox.showinfo('About', 'DatabaseTool_V2 created by Jakub Winsche')
 
 def darkMode():
     if darkmode.get() == 1:
-        window.config(background='black')
+        window.config(background = 'black')
     elif darkmode.get() == 0:
-        window.config(background='white')
+        window.config(background = 'SystemButtonFace')
     else:
-        messagebox.showerror('PythonGuides', 'Something went wrong!')
+        outputTextbox.insert(END, 'ERROR: Something went wrong!\n\n')
 
 def copy():
     sqlTextbox.insert(END, f'{pc.copy()}')
@@ -268,6 +269,7 @@ def deleteDB():
     print()
 
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
+
 window = Tk()
 window.title('Python Database Tool')
 
@@ -279,12 +281,6 @@ if not os.path.isdir('databases'):
 
 updateDatabases()    
 os.chdir('databases')
-
-frameNewDb = Frame(window)
-frameNewDb.grid(row = 3, column = 0, pady = 20, sticky = SW)
-
-frameButtons = Frame(window)
-frameButtons.grid(row = 0, column = 0)
 
 frameQuery = Frame(window)
 frameQuery.grid(row = 2, column = 0, sticky = NW)
@@ -304,19 +300,6 @@ outputTextbox.grid(row = 1, column = 0, sticky = NW)
 Label(window, image=pythonLogo).grid(row = 1, column = 0, sticky = NW)
 Label(window, image=sqliteLogo).grid(row = 1, column = 1, sticky = NW)
 
-buttonQuit = Button(frameButtons, text = 'Quit', width = 10, command = quitTool)
-buttonQuit.grid(row = 0, column = 4, sticky = NE)
-buttonHelp = Button(frameButtons, text = 'Help', width = 10, command = help)
-buttonHelp.grid(row = 0, column = 3, sticky = NE)
-buttonList = Button(frameButtons, text = 'List items', width = 15, command = listItems)
-buttonList.grid(row = 0, column = 2, sticky = NE)
-buttonClear = Button(frameOutput, text = 'Clear result box', command = clearOutput)
-buttonClear.grid(row = 2, column = 0, sticky = NE)
-buttonRun = Button(frameQuery, text = 'Run SQL', width = 10, command = runQuery)
-buttonRun.grid(row = 2, column = 0, sticky = NW)
-buttonTables = Button(frameButtons, text = 'List Tables', width = 15, command = getTables)
-buttonTables.grid(row = 0, column = 1, sticky = NE)
-
 menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
 file = Menu(menubar, tearoff=0)  
 file.add_command(label = 'New', command = buildDatabase)  
@@ -324,18 +307,17 @@ file.add_command(label = 'Open', command = open)
 
 deleteDB = Menu(file, tearoff = 0)
 dirs = os.listdir()
-dDirs = []
 
-if len(dirs) == 0: deleteDB.add_command(label = "empty")
-for i in range(0, len(dirs)): deleteDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: deleteDatabse(dirs[n - 1]))
-file.add_cascade(label = "Delete DB", menu = deleteDB)
+if len(dirs) == 0: deleteDB.add_command(label = 'empty')
+for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
+file.add_cascade(label = 'Delete DB', menu = deleteDB)
 
 chDB = Menu(file, tearoff = 0)
-oDirs = []
 
-if len(dirs) == 0: chDB.add_command(label = "empty")
-for i in range(0, len(dirs)): chDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: chooseDatabase(dirs[n - 1]))
-file.add_cascade(label = "Choose database", menu = chDB) 
+if len(dirs) == 0: chDB.add_command(label = 'empty')
+for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
+file.add_cascade(label = 'Choose database', menu = chDB) 
+
 file.add_separator()  
 file.add_command(label = 'Exit', command = quitTool)
 menubar.add_cascade(label = 'File', menu = file)  
@@ -353,16 +335,17 @@ minimap.set(True)
 darkmode = BooleanVar()
 darkmode.set(False)
 
-view = Menu(menubar, tearoff=0)
-view.add_checkbutton(label='show minimap', onvalue = 1, offvalue = 0, variable = minimap)
-view.add_checkbutton(label='Darkmode', onvalue=1, offvalue=0, variable=darkmode, command=darkMode)
-menubar.add_cascade(label='View', menu=view)
+view = Menu(menubar, tearoff = 0)
+view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
+view.add_cascade(label = 'View Table', command = lambda: listItems()) 
+menubar.add_cascade(label = 'View', menu = view)
 
-help = Menu(menubar, tearoff=0)  
-help.add_command(label='About', command=about)  
-menubar.add_cascade(label='Help', menu=help)  
+help = Menu(menubar, tearoff = 0)  
+help.add_command(label = 'About', command = about)  
+help.add_command(label = 'Help', command = help)  
+menubar.add_cascade(label = 'Help', menu = help)  
     
-window.config(menu=menubar)
+window.config(menu = menubar)
 
 # Run mainloop
 window.mainloop()

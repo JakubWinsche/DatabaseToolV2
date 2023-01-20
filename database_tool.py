@@ -241,13 +241,23 @@ def about():
 def darkMode():
     if darkmode.get() == 1:
         window.config(background = 'black')
+        sqlTextbox = Text(frameQuery, width = 50, height = 10, background = 'gray')
+        sqlTextbox.grid(row = 1, column = 0, sticky = NW)
+
+        outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = 'gray')
+        outputTextbox.grid(row = 1, column = 0, sticky = NW)
     elif darkmode.get() == 0:
         window.config(background = 'SystemButtonFace')
+        sqlTextbox = Text(frameQuery, width = 50, height = 10, background = textboxColour)
+        sqlTextbox.grid(row = 1, column = 0, sticky = NW)
+
+        outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = textboxColour)
+        outputTextbox.grid(row = 1, column = 0, sticky = NW)
     else:
         outputTextbox.insert(END, 'ERROR: Something went wrong!\n\n')
 
 def copy():
-    sqlTextbox.insert(END, f'{pc.copy()}')
+    pc.copy(sqlTextbox.get(0.0, END))
 
 def paste():
     sqlTextbox.insert(END, f'{pc.paste()}')

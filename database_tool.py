@@ -59,7 +59,13 @@ def dbTableFormat(info, body):
 
 def updateDatabases():
     numberOfDbs = 0
-    files = os.listdir('databases')
+
+    for db in os.listdir():
+        print(db)
+        if db != 'databases':
+            files = os.listdir()
+        else:
+            files = os.listdir('databases')
     for file in files:
         if file[-3:] == '.db':
             databases.append(file)
@@ -79,7 +85,7 @@ def buildDatabase():
     except:
         if name != None:
             if name == '':
-                outputTextbox.insert(END, 'ERROR: There was no input')
+                outputTextbox.insert(END, 'ERROR: There was no input.')
             else:
                 outputTextbox.insert(END, f'ERROR: Unknown error has occured.')
 
@@ -100,12 +106,7 @@ def buildDatabase():
         else:
             databases.append(dbName)
             currentDatabase = dbName
-
-            var = StringVar()
-            var.set(dbName)
-            dbDropdown = OptionMenu(frameButtons, var, *databases, command = chooseDatabase)
-            dbDropdown.grid(row = 0, column = 0, sticky = NW)
-
+            createMenubar()
 
 def chooseDatabase(table):
     global currentDatabase
@@ -113,9 +114,11 @@ def chooseDatabase(table):
     outputTextbox.insert(END, f'You are currently in: {currentDatabase}\n\n')
 
 def deleteDatabse(table):
-    clear = tkinter.messagebox.askquestion('Delete', f'Are you sure you want to delete {table[:-3]}?')
+    clear = tkinter.messagebox.askquestion('Delete', f'Are you sure you want to delete {table[:-3]}?\n\n')
     if clear == 'yes':
         os.remove(table)
+        createMenubar()
+
     
 def clearOutput():
     clear = tkinter.messagebox.askquestion('Clear', 'Are you sure you want to clear the output table?')
@@ -124,7 +127,10 @@ def clearOutput():
 
 def getTables():
     if currentDatabase == '':
-        outputTextbox.insert(END, 'ERROR: Please choose a database.\n\n')
+        if os.listdir() == []:
+            outputTextbox.insert(END, 'ERROR: Please create a database.\n\n')
+        else:
+            outputTextbox.insert(END, 'ERROR: Please choose a database.\n\n')
     else:
         query = '''SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;'''
         runSql(query)
@@ -198,7 +204,10 @@ WHERE condition;
 
 def runQuery():
     if currentDatabase == '':
-        outputTextbox.insert(END, 'ERROR: Please choose a database.\n\n')
+        if os.listdir() == []:
+            outputTextbox.insert(END, 'ERROR: Please create a database.\n\n')
+        else:
+            outputTextbox.insert(END, 'ERROR: Please choose a database.\n\n')
     else:
         query = sqlTextbox.get(0.0, END)
         runSql(query)
@@ -274,10 +283,6 @@ def open():
 
     except:
         outputTextbox.insert(END, f'ERROR: This file is already in the databases folder.\n\n')
-
-def deleteDB():
-    print()
-
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
 
 window = Tk()
@@ -310,52 +315,61 @@ outputTextbox.grid(row = 1, column = 0, sticky = NW)
 Label(window, image=pythonLogo).grid(row = 1, column = 0, sticky = NW)
 Label(window, image=sqliteLogo).grid(row = 1, column = 1, sticky = NW)
 
-menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
-file = Menu(menubar, tearoff=0)  
-file.add_command(label = 'New', command = buildDatabase)  
-file.add_command(label = 'Open', command = open)  
+button_clear = Button(frameOutput, text = "Clear result box", command = clearOutput)
+button_clear.grid(row = 2, column = 0, sticky = NE)
+button_run = Button(frameQuery, text = "Run SQL", width = 10, command = runQuery)
+button_run.grid(row = 2, column = 0, sticky = NW)
 
-deleteDB = Menu(file, tearoff = 0)
-dirs = os.listdir()
+def createMenubar():
+    global darkMode
 
-if len(dirs) == 0: deleteDB.add_command(label = 'empty')
-for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
-file.add_cascade(label = 'Delete DB', menu = deleteDB)
+    menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
+    file = Menu(menubar, tearoff = 0)  
+    file.add_command(label = 'New', command = buildDatabase)  
+    file.add_command(label = 'Open', command = open)  
 
-chDB = Menu(file, tearoff = 0)
+    dirs = os.listdir()
+    deleteDB = Menu(file, tearoff = 0)
 
-if len(dirs) == 0: chDB.add_command(label = 'empty')
-for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
-file.add_cascade(label = 'Choose database', menu = chDB) 
+    if len(dirs) == 0: deleteDB.add_command(label = 'empty')
+    for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
+    file.add_cascade(label = 'Delete DB', menu = deleteDB)
 
-file.add_separator()  
-file.add_command(label = 'Exit', command = quitTool)
-menubar.add_cascade(label = 'File', menu = file)  
+    chDB = Menu(file, tearoff = 0)
 
-edit = Menu(menubar, tearoff = 0)  
-edit.add_command(label = 'Undo')  
-edit.add_separator()     
-edit.add_command(label = 'Cut')  
-edit.add_command(label = 'Copy', command = copy)  
-edit.add_command(label = 'Paste', command = paste)  
-menubar.add_cascade(label = 'Edit', menu = edit)
+    if len(dirs) == 0: chDB.add_command(label = 'empty')
+    for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
+    file.add_cascade(label = 'Choose database', menu = chDB) 
 
-minimap = BooleanVar()
-minimap.set(True)
-darkmode = BooleanVar()
-darkmode.set(False)
+    file.add_separator()  
+    file.add_command(label = 'Exit', command = quitTool)
+    menubar.add_cascade(label = 'File', menu = file)  
 
-view = Menu(menubar, tearoff = 0)
-view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
-view.add_cascade(label = 'View Table', command = lambda: listItems()) 
-menubar.add_cascade(label = 'View', menu = view)
+    edit = Menu(menubar, tearoff = 0)  
+    edit.add_command(label = 'Undo')  
+    edit.add_separator()     
+    edit.add_command(label = 'Cut')  
+    edit.add_command(label = 'Copy', command = copy)  
+    edit.add_command(label = 'Paste', command = paste)  
+    menubar.add_cascade(label = 'Edit', menu = edit)
 
-help = Menu(menubar, tearoff = 0)  
-help.add_command(label = 'About', command = about)  
-help.add_command(label = 'Help', command = help)  
-menubar.add_cascade(label = 'Help', menu = help)  
-    
-window.config(menu = menubar)
+    minimap = BooleanVar()
+    minimap.set(True)
+    darkmode = BooleanVar()
+    darkmode.set(False)
 
+    view = Menu(menubar, tearoff = 0)
+    view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
+    view.add_cascade(label = 'View Table', command = lambda: listItems()) 
+    menubar.add_cascade(label = 'View', menu = view)
+
+    help = Menu(menubar, tearoff = 0)  
+    help.add_command(label = 'About', command = about)  
+    help.add_command(label = 'Help', command = help)  
+    menubar.add_cascade(label = 'Help', menu = help)  
+        
+    window.config(menu = menubar)
+
+createMenubar()
 # Run mainloop
 window.mainloop()

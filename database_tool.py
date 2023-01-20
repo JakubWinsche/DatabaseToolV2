@@ -106,10 +106,15 @@ def buildDatabase():
             dbDropdown = OptionMenu(frameButtons, var, *databases, command = chooseDatabase)
             dbDropdown.grid(row = 0, column = 0, sticky = NW)
 
-def chooseDatabase(value):
+def chooseDatabase(table):
     global currentDatabase
-    currentDatabase = value
+    currentDatabase = table
     outputTextbox.insert(END, f'You are currently in: {currentDatabase}\n\n')
+
+def deleteDatabse(table):
+    clear = tkinter.messagebox.askquestion('Delete', f'Are you sure you want to delete {table[:-3]}?')
+    if clear == 'yes':
+        os.remove(table)
     
 def clearOutput():
     clear = tkinter.messagebox.askquestion('Clear', 'Are you sure you want to clear the output table?')
@@ -322,7 +327,7 @@ dirs = os.listdir()
 dDirs = []
 
 if len(dirs) == 0: deleteDB.add_command(label = "empty")
-for i in range(0, len(dirs)): deleteDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: chooseDatabase(dirs[n - 1]))
+for i in range(0, len(dirs)): deleteDB.add_command(label = f"{dirs[i - 1]}", command = lambda n = i: deleteDatabse(dirs[n - 1]))
 file.add_cascade(label = "Delete DB", menu = deleteDB)
 
 chDB = Menu(file, tearoff = 0)

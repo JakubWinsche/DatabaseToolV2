@@ -3,9 +3,12 @@ import tkinter.messagebox
 from tkinter.scrolledtext import *
 from tkinter import simpledialog
 from tkinter import messagebox
+from tkinter.filedialog import askopenfilename
 import sqlite3
 import os
 import ctypes
+import pyperclip as pc
+import shutil
 
 currentDatabase = ''
 databases = []
@@ -212,6 +215,35 @@ def listItems():
                 outputTextbox.insert(END, 'There was no input')
             else:
                 outputTextbox.insert(END, f'There is no such table as {userInp}')
+
+def about():
+    messagebox.showinfo('PythonGuides', 'Python Guides aims at providing best practical tutorials')
+
+def darkMode():
+    if darkmode.get() == 1:
+        window.config(background='black')
+    elif darkmode.get() == 0:
+        window.config(background='white')
+    else:
+        messagebox.showerror('PythonGuides', 'Something went wrong!')
+
+def copy():
+    sqlTextbox.insert(END, f'{pc.paste()}')
+
+def paste():
+    sqlTextbox.insert(END, f'{pc.paste()}')
+
+def open():
+    Tk().withdraw()
+    filename = askopenfilename()
+    print(filename)
+    print(f'{os.getcwd()}/databases')
+    if file[-3:] == '.db':
+        shutil.move(f'{filename}', f'{os.getcwd()}')
+    else:
+         outputTextbox.insert(END, f'ERROR: This is not a databse file')
+
+
    
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
 window = Tk()
@@ -275,25 +307,14 @@ var.set('Choose database:')
 dbDropdown = OptionMenu(frameButtons, var, *databases if databases else ['empty'], command = chooseDatabase)
 dbDropdown.grid(row = 0, column = 0, sticky = NW)
 
-def about():
-    messagebox.showinfo('PythonGuides', 'Python Guides aims at providing best practical tutorials')
-
-def darkMode():
-    if darkmode.get() == 1:
-        darkMode.config(background='black')
-    elif darkmode.get() == 0:
-        darkMode.config(background='white')
-    else:
-        messagebox.showerror('PythonGuides', 'Something went wrong!')
-
-menubar = Menu(darkMode, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
-file = Menu(menubar, tearoff=1, background='#ffcc99', foreground='black')  
+menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
+file = Menu(menubar, tearoff=0)  
 file.add_command(label="New")  
-file.add_command(label="Open")  
+file.add_command(label="Open", command = open)  
 file.add_command(label="Save")  
 file.add_command(label="Save as")    
 file.add_separator()  
-file.add_command(label="Exit", command=darkMode.quit)  
+file.add_command(label="Exit", command = quitTool)  
 menubar.add_cascade(label="File", menu=file)  
 
 edit = Menu(menubar, tearoff=0)  
@@ -301,8 +322,8 @@ edit.add_command(label="Undo")
 edit.add_separator()     
 edit.add_command(label="Cut")  
 edit.add_command(label="Copy")  
-edit.add_command(label="Paste")  
-menubar.add_cascade(label="Edit", menu=edit)  
+edit.add_command(label="Paste", command = paste)  
+menubar.add_cascade(label="Edit", menu=edit)
 
 minimap = BooleanVar()
 minimap.set(True)

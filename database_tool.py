@@ -69,8 +69,20 @@ def buildDatabase():
     global dbDropdown
     global dbNameTextbox
 
-    dbName = dbNameTextbox.get() + '.db'
-    dbNameTextbox.delete(0, END)
+    root = tkinter.Tk()
+
+    try:
+        root.withdraw()
+        name = simpledialog.askstring(title = 'Create Database', prompt = 'What do you want to call your database?')
+
+    except:
+        if name != None:
+            if name == '':
+                outputTextbox.insert(END, 'ERROR: There was no input')
+            else:
+                outputTextbox.insert(END, f'ERROR: Unknown error has occured.')
+
+    dbName = name + '.db'
 
     if dbName == '.db':
         outputTextbox.insert(END, 'ERROR: Please enter a name for your new database.\n\n')
@@ -120,7 +132,7 @@ def quitTool():
 def help():
     root = Tk()
 
-    root.title("Help with SQL")
+    root.title('Help with SQL')
     root.geometry('400x300')
         
     createTable = '''
@@ -228,23 +240,27 @@ def darkMode():
         messagebox.showerror('PythonGuides', 'Something went wrong!')
 
 def copy():
-    sqlTextbox.insert(END, f'{pc.paste()}')
+    sqlTextbox.insert(END, f'{pc.copy()}')
 
 def paste():
     sqlTextbox.insert(END, f'{pc.paste()}')
 
 def open():
     Tk().withdraw()
-    filename = askopenfilename()
-    print(filename)
+    filename = str(askopenfilename())
     print(f'{os.getcwd()}/databases')
-    if file[-3:] == '.db':
-        shutil.move(f'{filename}', f'{os.getcwd()}')
-    else:
-         outputTextbox.insert(END, f'ERROR: This is not a databse file')
+    try:
+        if filename[-3:] == '.db':
+            shutil.move(filename, f'{os.getcwd()}')
+        else:
+            outputTextbox.insert(END, f'ERROR: This is not a databse file.\n\n')
 
+    except:
+        outputTextbox.insert(END, f'ERROR: This file is already in the databases folder.\n\n')
 
-   
+def deleteDB():
+    print()
+
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
 window = Tk()
 window.title('Python Database Tool')
@@ -252,8 +268,8 @@ window.title('Python Database Tool')
 pythonLogo = PhotoImage(file = 'python-logo.gif')
 sqliteLogo = PhotoImage(file = 'sqlite-logo.gif')
 
-if not os.path.isdir("databases"):
-    os.makedirs("databases")
+if not os.path.isdir('databases'):
+    os.makedirs('databases')
 
 updateDatabases()    
 os.chdir('databases')
@@ -270,13 +286,8 @@ frameQuery.grid(row = 2, column = 0, sticky = NW)
 frameOutput = Frame(window)
 frameOutput.grid(row = 2, column = 1, rowspan = 2)
 
-Label(frameNewDb, text='Create a new database:').grid(row = 0, column = 0, columnspan = 2, sticky = NW)
-Label(frameNewDb, text='Choose a name: ').grid(row = 1, column = 0, sticky = NW)
 Label(frameQuery, text='Add SQL:').grid(row = 0, column = 0, sticky = NW)
 Label(frameOutput, text='Output: ').grid(row = 0, column = 0, sticky = NW)
-
-dbNameTextbox = Entry(frameNewDb, width = 10)
-dbNameTextbox.grid(row = 1, column = 1, sticky = NW)
 
 sqlTextbox = Text(frameQuery, width = 50, height = 10, background = textboxColour)
 sqlTextbox.grid(row = 1, column = 0, sticky = NW)
@@ -287,20 +298,18 @@ outputTextbox.grid(row = 1, column = 0, sticky = NW)
 Label(window, image=pythonLogo).grid(row = 1, column = 0, sticky = NW)
 Label(window, image=sqliteLogo).grid(row = 1, column = 1, sticky = NW)
 
-buttonQuit = Button(frameButtons, text = "Quit", width = 10, command = quitTool)
+buttonQuit = Button(frameButtons, text = 'Quit', width = 10, command = quitTool)
 buttonQuit.grid(row = 0, column = 4, sticky = NE)
-buttonHelp = Button(frameButtons, text = "Help", width = 10, command = help)
+buttonHelp = Button(frameButtons, text = 'Help', width = 10, command = help)
 buttonHelp.grid(row = 0, column = 3, sticky = NE)
-buttonList = Button(frameButtons, text = "List items", width = 15, command = listItems)
+buttonList = Button(frameButtons, text = 'List items', width = 15, command = listItems)
 buttonList.grid(row = 0, column = 2, sticky = NE)
-buttonClear = Button(frameOutput, text = "Clear result box", command = clearOutput)
+buttonClear = Button(frameOutput, text = 'Clear result box', command = clearOutput)
 buttonClear.grid(row = 2, column = 0, sticky = NE)
-buttonRun = Button(frameQuery, text = "Run SQL", width = 10, command = runQuery)
+buttonRun = Button(frameQuery, text = 'Run SQL', width = 10, command = runQuery)
 buttonRun.grid(row = 2, column = 0, sticky = NW)
-buttonTables = Button(frameButtons, text = "List Tables", width = 15, command = getTables)
+buttonTables = Button(frameButtons, text = 'List Tables', width = 15, command = getTables)
 buttonTables.grid(row = 0, column = 1, sticky = NE)
-buttonSubmit = Button(frameNewDb, text = "Build database", command = buildDatabase)
-buttonSubmit.grid(row = 2, column = 0, sticky = NW)
 
 var = StringVar()
 var.set('Choose database:')
@@ -309,21 +318,40 @@ dbDropdown.grid(row = 0, column = 0, sticky = NW)
 
 menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
 file = Menu(menubar, tearoff=0)  
-file.add_command(label="New")  
-file.add_command(label="Open", command = open)  
-file.add_command(label="Save")  
-file.add_command(label="Save as")    
-file.add_separator()  
-file.add_command(label="Exit", command = quitTool)  
-menubar.add_cascade(label="File", menu=file)  
+file.add_command(label = 'New', command = buildDatabase)  
+file.add_command(label = 'Open', command = open)  
 
-edit = Menu(menubar, tearoff=0)  
-edit.add_command(label="Undo")  
+deleteDB = Menu(file, tearoff = 0)
+dirs = os.listdir()
+
+if len(dirs) == 0:
+    deleteDB.add_command(label = "empty")
+else:
+    for i in range(0, len(dirs)):
+        deleteDB.add_command(label = f"{dirs[i - 1]}", command = deleteDB)
+file.add_cascade(label = "Delete DB", menu = deleteDB)
+
+chDB = Menu(file, tearoff = 0)
+
+if len(dirs) == 0:
+    chDB.add_command(label = "empty")
+else:
+    for i in range(0, len(dirs)):
+        chDB.add_command(label = f"{dirs[i - 1]}", command = deleteDB)
+file.add_cascade(label = "Choose database", menu = chDB)
+
+file.add_command(label = 'Save as')    
+file.add_separator()  
+file.add_command(label = 'Exit', command = quitTool)
+menubar.add_cascade(label = 'File', menu = file)  
+
+edit = Menu(menubar, tearoff = 0)  
+edit.add_command(label = 'Undo')  
 edit.add_separator()     
-edit.add_command(label="Cut")  
-edit.add_command(label="Copy")  
-edit.add_command(label="Paste", command = paste)  
-menubar.add_cascade(label="Edit", menu=edit)
+edit.add_command(label = 'Cut')  
+edit.add_command(label = 'Copy')  
+edit.add_command(label = 'Paste', command = paste)  
+menubar.add_cascade(label = 'Edit', menu = edit)
 
 minimap = BooleanVar()
 minimap.set(True)
@@ -331,13 +359,13 @@ darkmode = BooleanVar()
 darkmode.set(False)
 
 view = Menu(menubar, tearoff=0)
-view.add_checkbutton(label="show minimap", onvalue=1, offvalue=0, variable=minimap)
+view.add_checkbutton(label='show minimap', onvalue = 1, offvalue = 0, variable = minimap)
 view.add_checkbutton(label='Darkmode', onvalue=1, offvalue=0, variable=darkmode, command=darkMode)
 menubar.add_cascade(label='View', menu=view)
 
 help = Menu(menubar, tearoff=0)  
-help.add_command(label="About", command=about)  
-menubar.add_cascade(label="Help", menu=help)  
+help.add_command(label='About', command=about)  
+menubar.add_cascade(label='Help', menu=help)  
     
 window.config(menu=menubar)
 

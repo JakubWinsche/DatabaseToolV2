@@ -306,7 +306,7 @@ frameOutput.grid(row = 2, column = 1, rowspan = 2)
 Label(frameQuery, text='Add SQL:').grid(row = 0, column = 0, sticky = NW)
 Label(frameOutput, text='Output: ').grid(row = 0, column = 0, sticky = NW)
 
-sqlTextbox = Text(frameQuery, width = 50, height = 10, background = textboxColour)
+sqlTextbox = Text(frameQuery, width = 50, height = 20, background = textboxColour)
 sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 
 outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = textboxColour)
@@ -353,8 +353,6 @@ def createMenubar():
     edit.add_command(label = 'Paste', command = paste)  
     menubar.add_cascade(label = 'Edit', menu = edit)
 
-    minimap = BooleanVar()
-    minimap.set(True)
     darkmode = BooleanVar()
     darkmode.set(False)
 
@@ -369,7 +367,7 @@ def createMenubar():
     menubar.add_cascade(label = 'Help', menu = help)  
         
     window.config(menu = menubar)
-
+    
 createMenubar()
 # Run mainloop
 window.mainloop()

@@ -10,6 +10,7 @@ import ctypes
 import pyperclip as pc
 import shutil
 import random
+import sys
 
 currentDatabase = ''
 databases = []
@@ -151,10 +152,10 @@ def helpS(i):
 
     T = Text(win, height = 6, width = 53) 
 
-    l = Label(win, text = "Quote for the Day") 
+    l = Label(win, text = "How to do XYZ: ") 
     l.config(font =("Courier", 14)) 
 
-    Quote = ['''Success usually comes to those who are too busy to be looking for it''', 'kys']
+    Quote = ['''words on a screen''', 'kys']
 
     b1 = Button(win, text = "Next", command = lambda: helpS(i + 1))
     print(i)
@@ -168,8 +169,7 @@ def helpS(i):
 
     T.insert(tkinter.END, Quote[i]) 
 
-    
-    tkinter.mainloop() 
+    tkinter.mainloop()
 
 def runQuery():
     if currentDatabase == '':
@@ -214,21 +214,22 @@ def listItems():
                 outputTextbox.insert(END, f'There is no such table as {userInp}.\n\n')
 
 def about():
-    messagebox.showinfo('About', 'DatabaseTool_V2 created by Jakub Winsche')
+    messagebox.showinfo('Database Tool', f'Database Tool\n\n\n\nVersion: 2.1.1 (console setup)\nCommit: 86a97cd\nDate: 2023-01-22 T10:05\nPip: 3.10.9\nOS: {sys.platform}\nSandboxed: No\nLicense: GNU General Public License v3.0\nCreated by: Jakub Winczewski')
 
 def darkMode():
-    mb = menubar()
+    mb = darkmode.get()
 
-    if mb.__createMenubar__().get() == 1:
-        window.config(background = 'black')
-        sqlTextbox = Text(frameQuery, width = 50, height = 10, background = 'gray')
+    if mb == 1:
+        window.config(background = '#282A3A')
+        sqlTextbox = Text(frameQuery, width = 50, height = 20, background = 'lightgray')
         sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 
-        outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = 'gray')
+        outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = 'lightgray')
         outputTextbox.grid(row = 1, column = 0, sticky = NW)
-    elif mb.__createMenubar__().get() == 0:
+
+    elif mb == 0: 
         window.config(background = 'SystemButtonFace')
-        sqlTextbox = Text(frameQuery, width = 50, height = 10, background = textboxColour)
+        sqlTextbox = Text(frameQuery, width = 50, height = 20, background = textboxColour)
         sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 
         outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = textboxColour)
@@ -310,7 +311,7 @@ class menubar:
         global view
         global entermode
 
-        menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
+        menubar = Menu(window, background = '#ff8000', foreground = 'black', activebackground = 'white', activeforeground = 'black')  
         file = Menu(menubar, tearoff = 0)  
         file.add_command(label = 'New', command = buildDatabase)  
         file.add_command(label = 'Open', command = open)  
@@ -346,19 +347,20 @@ class menubar:
         entermode = BooleanVar()
         entermode.set(False)
         
-        view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = lambda: darkMode)
+        view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
         view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)
         view.add_cascade(label = 'View Table', command = lambda: listItems()) 
         menubar.add_cascade(label = 'View', menu = view)
 
         help = Menu(menubar, tearoff = 0)  
-        help.add_command(label = 'About', command = about)  
-        help.add_command(label = 'Help', command = lambda: helpS(0))  
+        help.add_command(label = 'Help', command = lambda: helpS(0))
+        help.add_separator()    
+        help.add_command(label = 'License')   
+        help.add_command(label = 'About', command = about)   
         menubar.add_cascade(label = 'Help', menu = help)  
             
         window.config(menu = menubar)
 
- 
 mb = menubar()
 mb.__createMenubar__()
 

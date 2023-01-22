@@ -106,18 +106,21 @@ def buildDatabase():
         else:
             databases.append(dbName)
             currentDatabase = dbName
-            createMenubar()
+            mb = menubar()
+            mb.__createMenubar__()
 
 def chooseDatabase(table):
     global currentDatabase
     currentDatabase = table
     outputTextbox.insert(END, f'You are currently in: {currentDatabase}\n\n')
+    window.title(f'Python Database Tool: Currently in {currentDatabase.capitalize()}')
 
 def deleteDatabse(table):
     clear = tkinter.messagebox.askquestion('Delete', f'Are you sure you want to delete {table[:-3]}?\n\n')
     if clear == 'yes':
         os.remove(table)
-        createMenubar()
+        mb = menubar()
+        mb.__createMenubar__()
 
     
 def clearOutput():
@@ -141,66 +144,32 @@ def quitTool():
         window.withdraw()
         window.quit()
 
+def helpS(i):
+    win = Tk() 
 
-def help():
-    root = Tk()
+    win.geometry("250x170") 
 
-    root.title('Help with SQL')
-    root.geometry('400x300')
-        
-    createTable = '''
-CREATE TABLE table_name (
-    column_1 datatype,
-    column_2 datatype,
-    column_3 datatype
-);
-    '''
+    T = Text(win, height = 6, width = 53) 
 
-    alterTable = '''
-ALTER TABLE table_name
-ADD column_name datatype;
-    '''
+    l = Label(win, text = "Quote for the Day") 
+    l.config(font =("Courier", 14)) 
 
-    updateTable = '''
-UPDATE table_name
-SET column1 = value1, 
-column2 = value2, ...
-WHERE condition;
-    '''
+    Quote = ['''Success usually comes to those who are too busy to be looking for it''', 'kys']
 
-    deleteFromTable = '''
-DELETE FROM table_name
-WHERE condition;    
-    '''
+    b1 = Button(win, text = "Next", command = lambda: helpS(i + 1))
+    print(i)
 
-    frame = Frame(root)
+    b2 = Button(win, text = "Exit", command = win.destroy) 
 
-    text_box = Text(
-        frame,
-        height=5,
-        width=30,
-        wrap='word'
-    )
-    text_box2 = Text(
-        frame,
-        height=5,
-        width=30,
-        wrap='word'
-    )
-    text_box.insert('end', createTable)
-    text_box.pack(side=LEFT,expand=True)
-    text_box2.insert('end', alterTable)
-    text_box2.pack(side=LEFT,expand=True)
+    l.pack() 
+    T.pack() 
+    b1.pack() 
+    b2.pack() 
 
-    sb = Scrollbar(frame)
-    sb.pack(side=RIGHT, fill=BOTH)
+    T.insert(tkinter.END, Quote[i]) 
 
-    sb.config(command=text_box.yview)
-    sb.config(command=text_box2.yview)
-
-
-    frame.pack(expand=True)
-    root.mainloop()
+    
+    tkinter.mainloop() 
 
 def runQuery():
     if currentDatabase == '':
@@ -248,14 +217,16 @@ def about():
     messagebox.showinfo('About', 'DatabaseTool_V2 created by Jakub Winsche')
 
 def darkMode():
-    if darkmode.get() == 1:
+    mb = menubar()
+
+    if mb.__createMenubar__().get() == 1:
         window.config(background = 'black')
         sqlTextbox = Text(frameQuery, width = 50, height = 10, background = 'gray')
         sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 
         outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = 'gray')
         outputTextbox.grid(row = 1, column = 0, sticky = NW)
-    elif darkmode.get() == 0:
+    elif mb.__createMenubar__().get() == 0:
         window.config(background = 'SystemButtonFace')
         sqlTextbox = Text(frameQuery, width = 50, height = 10, background = textboxColour)
         sqlTextbox.grid(row = 1, column = 0, sticky = NW)
@@ -271,6 +242,11 @@ def copy():
 def paste():
     sqlTextbox.insert(END, f'{pc.paste()}')
 
+def cut():
+    pc.copy(sqlTextbox.get(0.0, END))
+    sqlTextbox.delete('1.0', END)
+
+
 def open():
     Tk().withdraw()
     filename = str(askopenfilename())
@@ -278,11 +254,19 @@ def open():
     try:
         if filename[-3:] == '.db':
             shutil.move(filename, f'{os.getcwd()}')
-        else:
+        elif filename != '':
             outputTextbox.insert(END, f'ERROR: This is not a databse file.\n\n')
 
     except:
         outputTextbox.insert(END, f'ERROR: This file is already in the databases folder.\n\n')
+
+def enterMode():
+    em = entermode.get()
+    if em == True:
+        sqlTextbox.bind('<Return>', lambda enter: runQuery())
+    else:
+        sqlTextbox.unbind('<Return>')
+
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
 
 window = Tk()
@@ -303,8 +287,8 @@ frameQuery.grid(row = 2, column = 0, sticky = NW)
 frameOutput = Frame(window)
 frameOutput.grid(row = 2, column = 1, rowspan = 2)
 
-Label(frameQuery, text='Add SQL:').grid(row = 0, column = 0, sticky = NW)
-Label(frameOutput, text='Output: ').grid(row = 0, column = 0, sticky = NW)
+Label(frameQuery, text = 'Add SQL:').grid(row = 0, column = 0, sticky = NW)
+Label(frameOutput, text = 'Output: ').grid(row = 0, column = 0, sticky = NW)
 
 sqlTextbox = Text(frameQuery, width = 50, height = 20, background = textboxColour)
 sqlTextbox.grid(row = 1, column = 0, sticky = NW)
@@ -312,62 +296,71 @@ sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = textboxColour)
 outputTextbox.grid(row = 1, column = 0, sticky = NW)
 
-Label(window, image=pythonLogo).grid(row = 1, column = 0, sticky = NW)
-Label(window, image=sqliteLogo).grid(row = 1, column = 1, sticky = NW)
+Label(window, image = pythonLogo).grid(row = 1, column = 0, sticky = NW)
+Label(window, image = sqliteLogo).grid(row = 1, column = 1, sticky = NW)
 
 button_clear = Button(frameOutput, text = "Clear result box", command = clearOutput)
 button_clear.grid(row = 2, column = 0, sticky = NE)
 button_run = Button(frameQuery, text = "Run SQL", width = 10, command = runQuery)
 button_run.grid(row = 2, column = 0, sticky = NW)
 
-def createMenubar():
-    global darkMode
+class menubar:
+    def __createMenubar__(self):
+        global darkmode
+        global view
+        global entermode
 
-    menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
-    file = Menu(menubar, tearoff = 0)  
-    file.add_command(label = 'New', command = buildDatabase)  
-    file.add_command(label = 'Open', command = open)  
+        menubar = Menu(window, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
+        file = Menu(menubar, tearoff = 0)  
+        file.add_command(label = 'New', command = buildDatabase)  
+        file.add_command(label = 'Open', command = open)  
 
-    dirs = os.listdir()
-    deleteDB = Menu(file, tearoff = 0)
+        dirs = os.listdir()
+        deleteDB = Menu(file, tearoff = 0)
 
-    if len(dirs) == 0: deleteDB.add_command(label = 'empty')
-    for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
-    file.add_cascade(label = 'Delete DB', menu = deleteDB)
+        if len(dirs) == 0: deleteDB.add_command(label = 'empty')
+        for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
+        file.add_cascade(label = 'Delete DB', menu = deleteDB)
 
-    chDB = Menu(file, tearoff = 0)
+        chDB = Menu(file, tearoff = 0)
 
-    if len(dirs) == 0: chDB.add_command(label = 'empty')
-    for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
-    file.add_cascade(label = 'Choose database', menu = chDB) 
+        if len(dirs) == 0: chDB.add_command(label = 'empty')
+        for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
+        file.add_cascade(label = 'Choose database', menu = chDB) 
 
-    file.add_separator()  
-    file.add_command(label = 'Exit', command = quitTool)
-    menubar.add_cascade(label = 'File', menu = file)  
+        file.add_separator()  
+        file.add_command(label = 'Exit', command = quitTool)
+        menubar.add_cascade(label = 'File', menu = file)  
 
-    edit = Menu(menubar, tearoff = 0)  
-    edit.add_command(label = 'Undo')  
-    edit.add_separator()     
-    edit.add_command(label = 'Cut')  
-    edit.add_command(label = 'Copy', command = copy)  
-    edit.add_command(label = 'Paste', command = paste)  
-    menubar.add_cascade(label = 'Edit', menu = edit)
-
-    darkmode = BooleanVar()
-    darkmode.set(False)
-
-    view = Menu(menubar, tearoff = 0)
-    view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
-    view.add_cascade(label = 'View Table', command = lambda: listItems()) 
-    menubar.add_cascade(label = 'View', menu = view)
-
-    help = Menu(menubar, tearoff = 0)  
-    help.add_command(label = 'About', command = about)  
-    help.add_command(label = 'Help', command = help)  
-    menubar.add_cascade(label = 'Help', menu = help)  
+        edit = Menu(menubar, tearoff = 0)  
+        edit.add_command(label = 'Undo')  
+        edit.add_separator()     
+        edit.add_command(label = 'Cut', command = cut)  
+        edit.add_command(label = 'Copy', command = copy)  
+        edit.add_command(label = 'Paste', command = paste)  
+        menubar.add_cascade(label = 'Edit', menu = edit)
         
-    window.config(menu = menubar)
-    
-createMenubar()
+        view = Menu(menubar, tearoff = 0)
+        darkmode = BooleanVar()
+        darkmode.set(False)
+        entermode = BooleanVar()
+        entermode.set(False)
+        
+        view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = lambda: darkMode)
+        view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)
+        view.add_cascade(label = 'View Table', command = lambda: listItems()) 
+        menubar.add_cascade(label = 'View', menu = view)
+
+        help = Menu(menubar, tearoff = 0)  
+        help.add_command(label = 'About', command = about)  
+        help.add_command(label = 'Help', command = lambda: helpS(0))  
+        menubar.add_cascade(label = 'Help', menu = help)  
+            
+        window.config(menu = menubar)
+
+ 
+mb = menubar()
+mb.__createMenubar__()
+
 # Run mainloop
 window.mainloop()

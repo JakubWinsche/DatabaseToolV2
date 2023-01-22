@@ -101,12 +101,13 @@ def buildDatabase():
         try:
             with sqlite3.connect(dbName) as db:
                 cursor = db.cursor()
-                outputTextbox.insert(END, f'Successfully created database {dbName}.\n\n')
+                outputTextbox.insert(END, f'Successfully created database {dbName[:-3]}.\n\n')
         except:
             outputTextbox.insert(END, 'ERROR: Please try again.\n\n')
         else:
             databases.append(dbName)
             currentDatabase = dbName
+            window.title(f'Python Database Tool: Currently in {currentDatabase}')
             mb = menubar()
             mb.__createMenubar__()
 
@@ -114,12 +115,14 @@ def chooseDatabase(table):
     global currentDatabase
     currentDatabase = table
     outputTextbox.insert(END, f'You are currently in: {currentDatabase}\n\n')
-    window.title(f'Python Database Tool: Currently in {currentDatabase.capitalize()}')
+    window.title(f'Python Database Tool: Currently in {currentDatabase}')
 
-def deleteDatabse(table):
+def deleteDatabase(table):
     clear = tkinter.messagebox.askquestion('Delete', f'Are you sure you want to delete {table[:-3]}?\n\n')
     if clear == 'yes':
         os.remove(table)
+        currentDatabase = ''
+        window.title('Python Database Tool')
         mb = menubar()
         mb.__createMenubar__()
 
@@ -256,7 +259,7 @@ def open():
         if filename[-3:] == '.db':
             shutil.move(filename, f'{os.getcwd()}')
         elif filename != '':
-            outputTextbox.insert(END, f'ERROR: This is not a databse file.\n\n')
+            outputTextbox.insert(END, f'ERROR: This is not a database file.\n\n')
 
     except:
         outputTextbox.insert(END, f'ERROR: This file is already in the databases folder.\n\n')
@@ -267,6 +270,21 @@ def enterMode():
         sqlTextbox.bind('<Return>', lambda enter: runQuery())
     else:
         sqlTextbox.unbind('<Return>')
+
+def rWorkspace():
+    reset = tkinter.messagebox.askquestion('Reset', 'Are you sure you want to reset your workspace?\n(NOTE: This action will delete all files and cannot be undone)')
+    if reset == 'yes':
+        try:
+            files = os.listdir('../databases')
+            print('fileS:', files)
+            for file in files:
+                os.remove(file)
+            sqlTextbox.delete(0.0, END)
+            outputTextbox.delete(0.0, END)
+            outputTextbox.insert(END, 'Workspace reset successfull.\n\n')
+
+        except:
+            outputTextbox.insert(END, f'ERROR: System was unable to perform this action: \nCheck permissions and try again.\n\n') 
 
 # ----------------------------------------------------------------- Main Code -----------------------------------------------------------------
 
@@ -315,20 +333,23 @@ class menubar:
         file = Menu(menubar, tearoff = 0)  
         file.add_command(label = 'New', command = buildDatabase)  
         file.add_command(label = 'Open', command = open)  
+        file.add_separator()  
 
         dirs = os.listdir()
         deleteDB = Menu(file, tearoff = 0)
 
         if len(dirs) == 0: deleteDB.add_command(label = 'empty')
-        for i in range(0, len(dirs)): deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabse(dirs[n - 1]))
+        for i in range(0, len(dirs)): 
+            if dirs[i - 1][-3:] == '.db': deleteDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: deleteDatabase(dirs[n - 1]))
         file.add_cascade(label = 'Delete DB', menu = deleteDB)
 
         chDB = Menu(file, tearoff = 0)
 
         if len(dirs) == 0: chDB.add_command(label = 'empty')
-        for i in range(0, len(dirs)): chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
-        file.add_cascade(label = 'Choose database', menu = chDB) 
-
+        for i in range(0, len(dirs)): 
+            if dirs[i - 1][-3:] == '.db': chDB.add_command(label = f'{dirs[i - 1]}', command = lambda n = i: chooseDatabase(dirs[n - 1]))
+        file.add_cascade(label = 'Choose DB', menu = chDB) 
+        file.add_command(label = 'Encrypt DB')
         file.add_separator()  
         file.add_command(label = 'Exit', command = quitTool)
         menubar.add_cascade(label = 'File', menu = file)  
@@ -338,7 +359,9 @@ class menubar:
         edit.add_separator()     
         edit.add_command(label = 'Cut', command = cut)  
         edit.add_command(label = 'Copy', command = copy)  
-        edit.add_command(label = 'Paste', command = paste)  
+        edit.add_command(label = 'Paste', command = paste)
+        edit.add_separator()  
+        edit.add_command(label = 'Reset Workspace', command = rWorkspace)
         menubar.add_cascade(label = 'Edit', menu = edit)
         
         view = Menu(menubar, tearoff = 0)
@@ -347,8 +370,9 @@ class menubar:
         entermode = BooleanVar()
         entermode.set(False)
         
-        view.add_checkbutton(label = 'Darkmode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
+        view.add_checkbutton(label = 'Dark mode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
         view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)
+        view.add_separator()  
         view.add_cascade(label = 'View Table', command = lambda: listItems()) 
         menubar.add_cascade(label = 'View', menu = view)
 

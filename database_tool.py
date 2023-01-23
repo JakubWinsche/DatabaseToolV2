@@ -291,6 +291,11 @@ def rWorkspace():
 window = Tk()
 window.title('Python Database Tool')
 
+darkmode = BooleanVar()
+darkmode.set(False)
+entermode = BooleanVar()
+entermode.set(False)
+
 pythonLogo = PhotoImage(file = 'python-logo.gif')
 sqliteLogo = PhotoImage(file = 'sqlite-logo.gif')
 
@@ -365,10 +370,6 @@ class menubar:
         menubar.add_cascade(label = 'Edit', menu = edit)
         
         view = Menu(menubar, tearoff = 0)
-        darkmode = BooleanVar()
-        darkmode.set(False)
-        entermode = BooleanVar()
-        entermode.set(False)
         
         view.add_checkbutton(label = 'Dark mode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
         view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)

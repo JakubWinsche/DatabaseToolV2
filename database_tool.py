@@ -6,13 +6,10 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 import sqlite3
 import os
-import ctypes
 import pyperclip as pc
 import shutil
-import random
 import sys
 
-currentDatabase = ''
 databases = []
 textboxColour = 'linen'
 
@@ -109,7 +106,7 @@ def buildDatabase():
             currentDatabase = dbName
             window.title(f'Python Database Tool: Currently in {currentDatabase}')
             mb = menubar()
-            mb.__createMenubar__()
+            mb.createMenubar()
 
 def chooseDatabase(table):
     global currentDatabase
@@ -124,7 +121,7 @@ def deleteDatabase(table):
         currentDatabase = ''
         window.title('Python Database Tool')
         mb = menubar()
-        mb.__createMenubar__()
+        mb.createMenubar()
 
     
 def clearOutput():
@@ -329,7 +326,7 @@ button_run = Button(frameQuery, text = "Run SQL", width = 10, command = runQuery
 button_run.grid(row = 2, column = 0, sticky = NW)
 
 class menubar:
-    def __createMenubar__(self):
+    def createMenubar(self):
         global darkmode
         global view
         global entermode
@@ -371,7 +368,7 @@ class menubar:
         
         view = Menu(menubar, tearoff = 0)
         
-        view.add_checkbutton(label = 'Dark mode', onvalue = 1, offvalue = 0, variable = darkmode, command = darkMode)
+        view.add_checkbutton(label = 'Dark mode', onvalue = True, offvalue = False, variable = darkmode, command = darkMode)
         view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)
         view.add_separator()  
         view.add_cascade(label = 'View Table', command = lambda: listItems()) 
@@ -387,7 +384,7 @@ class menubar:
         window.config(menu = menubar)
 
 mb = menubar()
-mb.__createMenubar__()
+mb.createMenubar()
 
 # Run mainloop
 window.mainloop()

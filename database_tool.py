@@ -255,6 +255,9 @@ def open():
     try:
         if filename[-3:] == '.db':
             shutil.move(filename, f'{os.getcwd()}')
+            mb = menubar()
+            mb.createMenubar()
+            
         elif filename != '':
             outputTextbox.insert(END, f'ERROR: This is not a database file.\n\n')
 
@@ -314,6 +317,8 @@ Label(frameOutput, text = 'Output: ').grid(row = 0, column = 0, sticky = NW)
 sqlTextbox = Text(frameQuery, width = 50, height = 20, background = textboxColour)
 sqlTextbox.grid(row = 1, column = 0, sticky = NW)
 
+
+
 outputTextbox = ScrolledText(frameOutput, width = 65, height = 20, background = textboxColour)
 outputTextbox.grid(row = 1, column = 0, sticky = NW)
 
@@ -324,6 +329,7 @@ button_clear = Button(frameOutput, text = "Clear result box", command = clearOut
 button_clear.grid(row = 2, column = 0, sticky = NE)
 button_run = Button(frameQuery, text = "Run SQL", width = 10, command = runQuery)
 button_run.grid(row = 2, column = 0, sticky = NW)
+
 
 class menubar:
     def createMenubar(self):
@@ -368,7 +374,7 @@ class menubar:
         
         view = Menu(menubar, tearoff = 0)
         
-        view.add_checkbutton(label = 'Dark mode', onvalue = True, offvalue = False, variable = darkmode, command = darkMode)
+        view.add_checkbutton(label = 'Dark mode', onvalue = True, offvalue = False, variable = darkmode)
         view.add_checkbutton(label = 'Enter Mode', onvalue = True, offvalue = False, variable = entermode, command = enterMode)
         view.add_separator()  
         view.add_cascade(label = 'View Table', command = lambda: listItems()) 
